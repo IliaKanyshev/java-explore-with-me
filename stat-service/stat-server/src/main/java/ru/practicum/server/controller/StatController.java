@@ -3,11 +3,10 @@ package ru.practicum.server.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.server.service.StatService;
-import org.springframework.web.bind.annotation.*;
 import ru.practicum.server.util.DateTimePattern;
 
 import java.time.LocalDateTime;

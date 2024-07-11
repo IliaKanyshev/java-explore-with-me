@@ -19,6 +19,7 @@ public class StatServiceImpl implements StatService {
     private final StatRepo statRepo;
     private final EndpointHitMapper hitMapper;
     private final ViewStatsMapper viewStatsMapper;
+
     @Override
     public void saveHit(EndpointHitDto endpointHitDto) {
         log.info("Add hit from app - " + endpointHitDto.getApp());
