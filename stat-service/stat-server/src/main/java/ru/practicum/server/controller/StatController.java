@@ -29,7 +29,7 @@ public class StatController {
                                        @RequestParam(value = "start") LocalDateTime start,
                                        @DateTimeFormat(pattern = DateTimePattern.PATTERN)
                                        @RequestParam(value = "end") LocalDateTime end,
-                                       @RequestParam List<String> uris,
+                                       @RequestParam(required = false) List<String> uris,
                                        @RequestParam(required = false, defaultValue = "false") Boolean unique) {
         return service.getStats(start, end, uris, unique);
     }
