@@ -26,13 +26,6 @@ public class StatServiceImpl implements StatService {
         statRepo.save(hitMapper.toEntity(endpointHitDto));
     }
 
-//    @Override
-//    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
-//        log.info("Get stats.");
-//        return unique ? viewStatsMapper.toEntityList(statRepo.getStatsByUrisAndIp(start, end, uris))
-//                : viewStatsMapper.toEntityList(statRepo.getStatsByUris(start, end, uris));
-//    }
-
     @Override
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         log.info("Get stats.");
