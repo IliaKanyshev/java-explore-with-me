@@ -8,6 +8,6 @@ import ru.practicum.server.util.DateTimePattern;
 
 @Mapper(componentModel = "spring")
 public interface EndpointHitMapper {
-    @Mapping(target = "timestamp", source = "timestamp", dateFormat = DateTimePattern.Pattern)
+    @Mapping(target = "timestamp", source = "timestamp", dateFormat = DateTimePattern.PATTERN)
     EndpointHit toEntity(EndpointHitDto endpointHitDto);
 }

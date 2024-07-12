@@ -12,19 +12,19 @@ import java.util.List;
 
 @Repository
 public interface StatRepo extends JpaRepository<EndpointHit, Long> {
-    @Query(value = "select new ru.practicum.server.model.ViewStats(h.app, h.uri, count(h.ip)) " +
-            "from  EndpointHit h " +
-            "where h.timestamp between :start and :end " +
-            "and h.uri in (:uris) " +
-            "group by h.app, h.uri " +
-            "order by count(distinct h.ip) desc")
+    @Query(value = "select new ru.practicum.server.model.ViewStats(e.app, e.uri, count(e.ip)) " +
+            "from  EndpointHit e " +
+            "where e.timestamp between :start and :end " +
+            "and e.uri in (:uris) " +
+            "group by e.app, e.uri " +
+            "order by count(distinct e.ip) desc")
     List<ViewStats> getStatsByUrisAndIp(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("uris") List<String> uris);
 
-    @Query(value = "select new ru.practicum.server.model.ViewStats(h.app, h.uri, count(h.ip)) " +
-            "from  EndpointHit h " +
-            "where h.timestamp between :start and :end " +
-            "and h.uri in (:uris) " +
-            "group by h.app, h.uri " +
-            "order by count(h.ip) desc")
+    @Query(value = "select new ru.practicum.server.model.ViewStats(e.app, e.uri, count(e.ip)) " +
+            "from  EndpointHit e " +
+            "where e.timestamp between :start and :end " +
+            "and e.uri in (:uris) " +
+            "group by e.app, e.uri " +
+            "order by count(e.ip) desc")
     List<ViewStats> getStatsByUris(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end, @Param("uris") List<String> uris);
 }
