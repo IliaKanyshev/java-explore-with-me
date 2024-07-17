@@ -9,7 +9,7 @@ import java.util.List;
 //@Component
 @Mapper(componentModel = "spring")
 public interface CompilationMapper {
-    CompilationDto ToCompilationDto(Compilation compilation);
+    CompilationDto toCompilationDto(Compilation compilation);
 
-    List<CompilationDto> ToListCompilationDto(List<Compilation> compilations);
+    List<CompilationDto> toListCompilationDto(List<Compilation> compilations);
 }

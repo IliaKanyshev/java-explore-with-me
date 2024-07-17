@@ -18,9 +18,9 @@ public class AdminCategoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryDto createCategory(@Valid @RequestBody CategoryDto CategoryDto) {
+    public CategoryDto createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         log.info("POST request /admin/categories");
-        return categoryService.saveCategory(CategoryDto);
+        return categoryService.saveCategory(categoryDto);
     }
 
     @DeleteMapping("/{catId}")

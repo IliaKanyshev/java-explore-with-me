@@ -37,7 +37,7 @@ public class CompilationServiceImpl implements CompilationService {
         compilation.setTitle(newCompilationDto.getTitle());
         Compilation savedComp = compilationRepo.save(compilation);
         log.info("Compilation was created");
-        return mapper.ToCompilationDto(savedComp);
+        return mapper.toCompilationDto(savedComp);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepo.findById(compId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Compilation with id %d not found.", compId)));
         log.info("Get compilation with id {}", compId);
-        return mapper.ToCompilationDto(compilation);
+        return mapper.toCompilationDto(compilation);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class CompilationServiceImpl implements CompilationService {
         Pageable pageable = PageRequest.of(from / size, size);
         List<Compilation> compilations = compilationRepo.findCompilations(pinned, pageable);
         log.info("Getting compilations list.");
-        return mapper.ToListCompilationDto(compilations);
+        return mapper.toListCompilationDto(compilations);
     }
 
     @Override
@@ -78,6 +78,6 @@ public class CompilationServiceImpl implements CompilationService {
         }
         compilation.setEvents(eventRepo.findAllByIdIn(request.getEvents()));
         log.info("Compilation with id {} updated", compId);
-        return mapper.ToCompilationDto(compilationRepo.save(compilation));
+        return mapper.toCompilationDto(compilationRepo.save(compilation));
     }
 }
