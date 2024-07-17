@@ -3,7 +3,6 @@ package ru.practicum.ewm.controller.admin_controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.event.EventFullDto;
@@ -39,7 +38,7 @@ public class AdminEventController {
                                         @RequestParam(name = "rangeEnd", required = false) LocalDateTime rangeEnd,
                                         @RequestParam(name = "from", required = false, defaultValue = "0") Integer from,
                                         @RequestParam(name = "size", required = false, defaultValue = "10") Integer size) {
-        PageRequest pageRequest = PageRequest.of(from/size , size);
+        PageRequest pageRequest = PageRequest.of(from / size, size);
         log.info("GET request /admin/events");
         return eventService.getEventsWithParamsByAdmin(users, states, categoriesId, rangeStart, rangeEnd, pageRequest);
     }

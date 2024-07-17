@@ -1,6 +1,9 @@
 package ru.practicum.ewm.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.ewm.util.enums.RequestStatus;
 
 import javax.persistence.*;

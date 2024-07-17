@@ -117,13 +117,13 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             "GROUP BY e.id " +
             "ORDER BY LOWER(:sort) ASC")
     List<Event> findEventsWithParamsByUser(@Param("text") String text,
-                                            @Param("categories") List<Long> categories,
-                                            @Param("paid") Boolean paid,
-                                            @Param("rangeStart") LocalDateTime rangeStart,
-                                            @Param("rangeEnd") LocalDateTime rangeEnd,
-                                            @Param("onlyAvailable") Boolean onlyAvailable,
-                                            @Param("sort") String sort,
-                                            PageRequest pageRequest);
+                                           @Param("categories") List<Long> categories,
+                                           @Param("paid") Boolean paid,
+                                           @Param("rangeStart") LocalDateTime rangeStart,
+                                           @Param("rangeEnd") LocalDateTime rangeEnd,
+                                           @Param("onlyAvailable") Boolean onlyAvailable,
+                                           @Param("sort") String sort,
+                                           PageRequest pageRequest);
 
     @Query("SELECT e from Event e " +
             "WHERE (:users is null or e.initiator.id in :users) " +
@@ -132,5 +132,5 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             "AND e.eventDate > :rangeStart " +
             "AND e.eventDate < :rangeEnd")
     List<Event> findEventsWithParams(List<Long> users, List<EventState> states, List<Long> categories,
-                                   LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable page);
+                                     LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable page);
 }

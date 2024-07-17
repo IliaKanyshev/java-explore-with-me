@@ -6,8 +6,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.client.StatClient;
-import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.ewm.dao.CompilationRepo;
 import ru.practicum.ewm.dao.EventRepo;
 import ru.practicum.ewm.dto.compilation.CompilationDto;
@@ -18,12 +16,8 @@ import ru.practicum.ewm.mapper.CompilationMapper;
 import ru.practicum.ewm.model.Compilation;
 import ru.practicum.ewm.model.Event;
 import ru.practicum.ewm.service.CompilationService;
-import ru.practicum.ewm.util.DateTimePattern;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +44,7 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto getCompilation(Long compId) {
         Compilation compilation = compilationRepo.findById(compId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Compilation with id %d not found.", compId)));
-       log.info("Get compilation with id {}", compId);
+        log.info("Get compilation with id {}", compId);
         return mapper.ToCompilationDto(compilation);
     }
 
@@ -58,7 +52,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Transactional
     public void deleteCompilation(Long compId) {
         compilationRepo.findById(compId)
-                        .orElseThrow(() -> new DataNotFoundException(String.format("Compilation with id %d not found.", compId)));
+                .orElseThrow(() -> new DataNotFoundException(String.format("Compilation with id %d not found.", compId)));
         compilationRepo.deleteById(compId);
         log.info("Compilation with id {} deleted", compId);
     }

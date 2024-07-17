@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import ru.practicum.client.StatClient;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
@@ -27,18 +25,15 @@ import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.service.EventService;
 import ru.practicum.ewm.util.DateTimePattern;
 import ru.practicum.ewm.util.enums.EventState;
-import ru.practicum.ewm.util.enums.SortValue;
 import ru.practicum.ewm.util.enums.StateAction;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -266,7 +261,7 @@ public class EventServiceImpl implements EventService {
 //        return mapper.toEventFullDtoList(events);
 //    }
     public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
-                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd, PageRequest page) {
+                                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, PageRequest page) {
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -398,7 +393,6 @@ public class EventServiceImpl implements EventService {
     }
 
 
-
 //    public void setView(List<Event> events) {
 //        if (events.isEmpty()) {
 //            return;
@@ -440,8 +434,6 @@ public class EventServiceImpl implements EventService {
             throw new DataConflictException("Event date should be 2 hours ahead creation date.");
         }
     }
-
-
 
 
 //        public void sendStat(Event event, HttpServletRequest request) {
@@ -607,7 +599,7 @@ public class EventServiceImpl implements EventService {
 //        return getStats(start, end, Collections.singletonList(uri), true);
 //    }
 
-    }
+}
 
 
 

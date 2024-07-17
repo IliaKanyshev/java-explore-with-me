@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.event.EventFullDto;
 import ru.practicum.ewm.dto.event.EventShortDto;
 import ru.practicum.ewm.service.EventService;
-import ru.practicum.ewm.util.enums.SortValue;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
@@ -36,15 +35,15 @@ public class PublicEventController {
                                                          @RequestParam(required = false) List<Long> categories,
                                                          @RequestParam(required = false) Boolean paid,
                                                          @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                                        @RequestParam(required = false) LocalDateTime rangeStart,
+                                                         @RequestParam(required = false) LocalDateTime rangeStart,
                                                          @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                                        @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                         @RequestParam(required = false) LocalDateTime rangeEnd,
                                                          @RequestParam(required = false) Boolean onlyAvailable,
                                                          @RequestParam(required = false) String sort,
                                                          @PositiveOrZero
-                                                        @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                         @RequestParam(required = false, defaultValue = "0") Integer from,
                                                          @Positive
-                                                        @RequestParam(required = false, defaultValue = "10") Integer size,
+                                                         @RequestParam(required = false, defaultValue = "10") Integer size,
                                                          HttpServletRequest request) {
         log.info("GET request /events");
         return eventService.getEventsWithParamsByUser(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);

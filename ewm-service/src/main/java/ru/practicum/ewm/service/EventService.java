@@ -1,11 +1,8 @@
 package ru.practicum.ewm.service;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import ru.practicum.ewm.dto.event.*;
-import ru.practicum.ewm.model.Event;
 import ru.practicum.ewm.util.enums.EventState;
-import ru.practicum.ewm.util.enums.SortValue;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
@@ -28,6 +25,6 @@ public interface EventService {
                                                   LocalDateTime rangeStart, LocalDateTime rangeEnd, PageRequest page);
 
     List<EventShortDto> getEventsWithParamsByUser(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                               LocalDateTime rangeEnd, Boolean onlyAvailable, String sort,
+                                                  LocalDateTime rangeEnd, Boolean onlyAvailable, String sort,
                                                   Integer from, Integer size, HttpServletRequest request);
 }

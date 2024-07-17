@@ -1,7 +1,6 @@
 package ru.practicum.ewm.mapper;
 
 import org.mapstruct.Mapper;
-import org.springframework.stereotype.Component;
 import ru.practicum.ewm.dto.compilation.CompilationDto;
 import ru.practicum.ewm.model.Compilation;
 

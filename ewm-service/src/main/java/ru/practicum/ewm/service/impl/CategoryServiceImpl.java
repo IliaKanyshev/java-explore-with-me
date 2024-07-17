@@ -43,13 +43,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void deleteCategory(Long catId) {
-            categoryRepo.findById(catId)
-                    .orElseThrow(() -> new DataNotFoundException(String.format("Category with id %d not found.",catId)));
+        categoryRepo.findById(catId)
+                .orElseThrow(() -> new DataNotFoundException(String.format("Category with id %d not found.", catId)));
         //        if (eventRepo.findByCategoryId(catId)) {
 //            throw new DataConflictException("Category is not empty.");
 //        }
         if (!eventRepo.findAllByCategoryId(catId).isEmpty()) {
-            throw new DataConflictException(String.format("Category with id %d isn't empty.",catId));
+            throw new DataConflictException(String.format("Category with id %d isn't empty.", catId));
         }
         log.info("Category with id {} was deleted.", catId);
         categoryRepo.deleteById(catId);
@@ -73,10 +73,6 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Getting categories list.");
         return mapper.toCategoryDtoList(categoryRepo.findAll(page).toList());
     }
-
-
-
-
 
 
 }
