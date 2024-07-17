@@ -5,7 +5,7 @@ import ru.practicum.ewm.dto.category.CategoryDto;
 import java.util.List;
 
 public interface CategoryService {
-    CategoryDto saveCategory(CategoryDto CategoryDto);
+    CategoryDto saveCategory(CategoryDto categoryDto);
 
     CategoryDto getCategory(Long catId);
 

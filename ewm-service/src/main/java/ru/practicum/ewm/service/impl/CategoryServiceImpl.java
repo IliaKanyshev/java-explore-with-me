@@ -25,12 +25,12 @@ public class CategoryServiceImpl implements CategoryService {
     private final EventRepo eventRepo;
 
     @Override
-    public CategoryDto saveCategory(CategoryDto CategoryDto) {
+    public CategoryDto saveCategory(CategoryDto categoryDto) {
 //        if (categoryRepo.existsByName(CategoryDto.getName())) {
 //            throw new DataConflictException(String.format("Category name %s is already in use.", CategoryDto.getName()));
 //        }
-        log.info("Category with name {} was created.", CategoryDto.getName());
-        return mapper.toCategoryDto(categoryRepo.save(mapper.toCategory(CategoryDto)));
+        log.info("Category with name {} was created.", categoryDto.getName());
+        return mapper.toCategoryDto(categoryRepo.save(mapper.toCategory(categoryDto)));
     }
 
     @Override
