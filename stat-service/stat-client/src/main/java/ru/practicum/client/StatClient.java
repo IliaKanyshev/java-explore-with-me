@@ -20,7 +20,7 @@ public class StatClient {
     private final String serverUrl;
     private final RestTemplate restTemplate;
 
-    public StatClient(@Value("${stat-server.url}") String serverUrl, RestTemplate restTemplate) {
+    public StatClient(@Value("${stats-server.url}") String serverUrl, RestTemplate restTemplate) {
         this.serverUrl = serverUrl;
         this.restTemplate = restTemplate;
     }
