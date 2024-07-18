@@ -150,44 +150,4 @@ public class RequestServiceImpl implements RequestService {
 
         return result;
     }
-//        Event event = eventRepo.findById(eventId).orElseThrow(() -> new DataNotFoundException("Event doesn't exist"));
-//        EventRequestStatusUpdateResult result = new EventRequestStatusUpdateResult();
-//
-//        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
-//            return result;
-//        }
-//
-//        List<Request> requests = requestRepo.findAllByEventWithInitiator(userId, eventId);
-//        List<Request> requestsToUpdate = requests.stream().filter(r -> request.getRequestIds().contains(r.getId())).collect(Collectors.toList());
-//
-//        if (requestsToUpdate.stream().anyMatch(r -> r.getStatus().equals(RequestStatus.CONFIRMED) && request.getStatus().equals(RequestStatus.REJECTED))) {
-//            throw new DataConflictException("request already confirmed");
-//        }
-//
-//        if (event.getConfirmedRequests() + requestsToUpdate.size() > event.getParticipantLimit() && request.getStatus().equals(RequestStatus.CONFIRMED)) {
-//            throw new DataConflictException("exceeding the limit of participants");
-//        }
-//
-//        for (Request req : requestsToUpdate) {
-//            req.setStatus(RequestStatus.valueOf(request.getStatus().toString()));
-//        }
-//
-//        requestRepo.saveAll(requestsToUpdate);
-//
-//        if (request.getStatus().equals(RequestStatus.CONFIRMED)) {
-//            event.setConfirmedRequests(event.getConfirmedRequests() + requestsToUpdate.size());
-//        }
-//
-//        eventRepo.save(event);
-//
-//        if (request.getStatus().equals(RequestStatus.CONFIRMED)) {
-//            result.setConfirmedRequests(mapper.toRequestDtoList(requestsToUpdate));
-//        }
-//
-//        if (request.getStatus().equals(RequestStatus.REJECTED)) {
-//            result.setRejectedRequests(mapper.toRequestDtoList(requestsToUpdate));
-//        }
-//
-//        return result;
-//    }
 }

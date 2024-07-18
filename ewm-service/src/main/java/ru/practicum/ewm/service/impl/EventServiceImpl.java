@@ -217,50 +217,6 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-//    public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, EventState states, List<Long> categoriesId, String rangeStart, String rangeEnd, Integer from, Integer size) {
-//        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
-//        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
-//
-//        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-//        CriteriaQuery<Event> query = builder.createQuery(Event.class);
-//        Root<Event> root = query.from(Event.class);
-//
-//        List<Predicate> predicates = new ArrayList<>();
-//
-//        if (!CollectionUtils.isEmpty(categoriesId)) {
-//            predicates.add(root.get("category").in(categoriesId));
-//        }
-//
-//        if (!CollectionUtils.isEmpty(users)) {
-//            predicates.add(root.get("initiator").in(users));
-//        }
-//
-//        if (states != null) {
-//            predicates.add(root.get("state").in(states));
-//        }
-//
-//        if (start != null) {
-//            predicates.add(builder.greaterThanOrEqualTo(root.get("eventDate").as(LocalDateTime.class), start));
-//        }
-//
-//        if (end != null) {
-//            predicates.add(builder.lessThanOrEqualTo(root.get("eventDate").as(LocalDateTime.class), end));
-//        }
-//
-//        query.select(root).where(builder.and(predicates.toArray(new Predicate[0])));
-//
-//        List<Event> events = entityManager.createQuery(query)
-//                .setFirstResult(from)
-//                .setMaxResults(size)
-//                .getResultList();
-//
-//        if (events.isEmpty()) {
-//            return new ArrayList<>();
-//        }
-//
-//        events.forEach(this::setViews);
-//        return mapper.toEventFullDtoList(events);
-//    }
     public List<EventFullDto> getEventsWithParamsByAdmin(List<Long> users, List<EventState> states, List<Long> categories,
                                                          LocalDateTime rangeStart, LocalDateTime rangeEnd, PageRequest page) {
         if (rangeStart == null) {
@@ -301,34 +257,6 @@ public class EventServiceImpl implements EventService {
         return mapper.toEventShortDtoList(events);
     }
 
-//    public List<EventFullDto> getEventsWithParamsByUser(String text, List<Long> categories, Boolean paid, String rangeStart,
-//                                                        String rangeEnd, Boolean onlyAvailable, SortValue sort, Integer from, Integer size, HttpServletRequest request) {
-//        LocalDateTime start = rangeStart != null ? LocalDateTime.parse(rangeStart, dateFormatter) : null;
-//        LocalDateTime end = rangeEnd != null ? LocalDateTime.parse(rangeEnd, dateFormatter) : null;
-//
-//        Sort sortCriteria = Sort.by(Sort.Direction.ASC, "eventDate");
-//        if (sort != null && sort.equals(SortValue.VIEWS)) {
-//            sortCriteria = Sort.by(Sort.Direction.DESC, "views");
-//        }
-//
-//        Pageable pageable = PageRequest.of(from / size, size, sortCriteria);
-//
-//        List<Event> events = eventRepository.findEventsWithParams(text, categories, paid, start, end, pageable);
-//
-//        if (onlyAvailable) {
-//            events = events.stream()
-//                    .filter(event -> event.getConfirmedRequests() < (long) event.getParticipantLimit())
-//                    .collect(Collectors.toList());
-//        }
-//
-//        if (events.isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//
-//        setView(events);
-//        sendStat(events, request);
-//        return eventMapper.toEventFullDtoList(events);
-//    }
 
     @Override
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
@@ -393,32 +321,6 @@ public class EventServiceImpl implements EventService {
         return dto;
     }
 
-
-//    public void setView(List<Event> events) {
-//        if (events.isEmpty()) {
-//            return;
-//        }
-//        LocalDateTime start = events.stream().map(Event::getCreatedOn).min(LocalDateTime::compareTo).orElse(LocalDateTime.now());
-//        List<String> uris = events.stream().map(event -> "/events/" + event.getId()).collect(Collectors.toList());
-//        Map<String, Event> eventsUri = events.stream().collect(Collectors.toMap(event -> "/events/" + event.getId(), event -> event));
-//        events.forEach(event -> event.setViews(0L));
-//        String startTime = start.format(dateFormatter);
-//        String endTime = LocalDateTime.now().format(dateFormatter);
-//        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-//        stats.forEach(stat -> eventsUri.get(stat.getUri()).setViews(stat.getHits()));
-//    }
-
-//    public void setView(Event event) {
-//        String startTime = event.getCreatedOn().format(dateFormatter);
-//        String endTime = LocalDateTime.now().format(dateFormatter);
-//        List<String> uris = List.of("/events/" + event.getId());
-//        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-//        event.setViews(stats.isEmpty() ? 0L : stats.get(0).getHits());
-//    }
-
-//    private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
-//        return statClient.getStats(startTime, endTime, uris, false);
-//    }
 
     private User findUser(Long userId) {
         return userRepo.findById(userId)
@@ -592,13 +494,7 @@ public class EventServiceImpl implements EventService {
     private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
         return statClient.getStats(startTime, endTime, uris, false);
     }
-//    public List<ViewStatsDto> getEventStats(Long eventId) {
-//        String uri = "/events/" + eventId;
-//        // Example: start and end dates are hardcoded, adjust as necessary
-//        String start = "2023-01-01T00:00:00";
-//        String end = "2023-12-31T23:59:59";
-//        return getStats(start, end, Collections.singletonList(uri), true);
-//    }
+
 
 }
 
