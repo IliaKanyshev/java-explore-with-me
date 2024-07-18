@@ -103,7 +103,7 @@ public class RequestServiceImpl implements RequestService {
                 .orElseThrow(() -> new DataNotFoundException(String.format("Event with id %d not found.", eventId)));
 
         if (!user.getId().equals(event.getInitiator().getId())) {
-            throw new DataConflictException(String.format("User %s is not the initiator of the event %s.", userId, eventId));
+            throw new DataConflictException(String.format("User %d is not the initiator of the event %d.", userId, eventId));
         }
 
         if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {

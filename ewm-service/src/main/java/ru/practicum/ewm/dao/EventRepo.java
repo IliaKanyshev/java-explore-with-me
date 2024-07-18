@@ -100,7 +100,7 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             "JOIN FETCH e.category " +
             "JOIN fetch e.location " +
             "WHERE e.id = :id")
-    Optional<Event> findByIdWithAllParams(Long id);
+    Optional<Event> findByIdWithAllParams(@Param("id") Long id);
 
     @Query(value = "SELECT e FROM Event AS e " +
             "WHERE (e.state = 'PUBLISHED') " +

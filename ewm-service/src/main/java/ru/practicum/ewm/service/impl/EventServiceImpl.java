@@ -25,6 +25,7 @@ import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.service.EventService;
 import ru.practicum.ewm.util.DateTimePattern;
 import ru.practicum.ewm.util.enums.EventState;
+import ru.practicum.ewm.util.enums.RequestStatus;
 import ru.practicum.ewm.util.enums.StateAction;
 
 import javax.servlet.http.HttpServletRequest;
@@ -96,7 +97,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventByUserId(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         findUser(userId);
         Event event = findEvent(eventId);
-        if (event.getPublishedOn() != null) {
+        if (event.getState().equals(EventState.PUBLISHED)) {
             throw new DataConflictException("Event already published.");
         }
         if (updateEventUserRequest == null) {
@@ -153,7 +154,8 @@ public class EventServiceImpl implements EventService {
             event.setAnnotation(updateEvent.getAnnotation());
         }
         if (updateEvent.getCategory() != null) {
-            Category category = categoryRepo.findById(updateEvent.getCategory()).orElseThrow(() -> new DataNotFoundException("Category not found."));
+            Category category = categoryRepo.findById(updateEvent.getCategory())
+                    .orElseThrow(() -> new DataNotFoundException("Category not found."));
             event.setCategory(category);
         }
         if (updateEvent.getDescription() != null) {
