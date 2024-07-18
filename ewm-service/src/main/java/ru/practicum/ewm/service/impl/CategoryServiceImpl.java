@@ -26,9 +26,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto saveCategory(CategoryDto categoryDto) {
-//        if (categoryRepo.existsByName(CategoryDto.getName())) {
-//            throw new DataConflictException(String.format("Category name %s is already in use.", CategoryDto.getName()));
-//        }
         log.info("Category with name {} was created.", categoryDto.getName());
         return mapper.toCategoryDto(categoryRepo.save(mapper.toCategory(categoryDto)));
     }
@@ -45,9 +42,6 @@ public class CategoryServiceImpl implements CategoryService {
     public void deleteCategory(Long catId) {
         categoryRepo.findById(catId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Category with id %d not found.", catId)));
-        //        if (eventRepo.findByCategoryId(catId)) {
-//            throw new DataConflictException("Category is not empty.");
-//        }
         if (!eventRepo.findAllByCategoryId(catId).isEmpty()) {
             throw new DataConflictException(String.format("Category with id %d isn't empty.", catId));
         }
@@ -59,9 +53,6 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto updateCategory(Long catId, CategoryDto categoryDto) {
         Category category = categoryRepo.findById(catId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Category with id %d not found.", catId)));
-//        if (categoryRepo.existsByName(categoryDto.getName())) {
-//            throw new DataConflictException(String.format("Category name %s is already in use.", categoryDto.getName()));
-//        }
         category.setName(categoryDto.getName());
         log.info("Category {} was updated.", category.getName());
         return mapper.toCategoryDto(categoryRepo.save(category));

@@ -33,21 +33,6 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             "WHERE e.id in :ids")
     List<Event> findAllByIdIn(List<Long> ids);
 
-//    @Query("SELECT e FROM Event e WHERE " +
-//            "(:users IS NULL OR e.initiator.id IN :users) AND " +
-//            "(:states IS NULL OR e.state = :states) AND " +
-//            "(:categoriesId IS NULL OR e.category.id IN :categoriesId) AND " +
-//            "(:rangeStart IS NULL OR e.eventDate >= :rangeStart) AND " +
-//            "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
-//    List<Event> findEventsWithParamsByAdmin(
-//            @Param("users") List<Long> users,
-//            @Param("states") EventState states,
-//            @Param("categoriesId") List<Long> categoriesId,
-//            @Param("rangeStart") LocalDateTime rangeStart,
-//            @Param("rangeEnd") LocalDateTime rangeEnd,
-//            @Param("from") Integer from,
-//            @Param("size") Integer size);
-
     @Query("SELECT e FROM Event e " +
             "WHERE (:categories IS NULL OR e.category.id IN :categories) " +
             "AND (:users IS NULL OR e.initiator.id IN :users) " +
@@ -61,39 +46,6 @@ public interface EventRepo extends JpaRepository<Event, Long> {
             @Param("rangeStart") LocalDateTime rangeStart,
             @Param("rangeEnd") LocalDateTime rangeEnd,
             Pageable pageable);
-
-//    @Query("SELECT e FROM Event e WHERE " +
-//            "(:text IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) AND " +
-//            "(:categories IS NULL OR e.category.id IN :categories) AND " +
-//            "(:paid IS NULL OR e.paid = :paid) AND " +
-//            "(:rangeStart IS NULL OR e.eventDate >= :rangeStart) AND " +
-//            "(:rangeEnd IS NULL OR e.eventDate <= :rangeEnd)")
-//    List<Event> findEventsWithParamsByUser(
-//            @Param("text") String text,
-//            @Param("categories") List<Long> categories,
-//            @Param("paid") Boolean paid,
-//            @Param("rangeStart") LocalDateTime rangeStart,
-//            @Param("rangeEnd") LocalDateTime rangeEnd,
-//            @Param("from") Integer from,
-//            @Param("size") Integer size);
-
-//    @Query("select e from Event e " +
-//            "where e.state = 'PUBLISHED' " +
-//            "and (:text is null or upper(e.annotation) like upper(concat('%', :text, '%')) or upper(e.description) " +
-//            "like upper(concat('%', :text, '%')))" +
-//            "and (:categories is null or e.category.id in :categories) " +
-//            "and (:paid is null or e.paid = :paid) " +
-//            "and e.eventDate > :rangeStart " +
-//            "and e.eventDate < :rangeEnd " +
-//            "and (:onlyAvailable is null or e.confirmedRequests < e.participantLimit or e.participantLimit = 0)")
-//    List<Event> findEventsWithParamsByUser(
-//            @Param("text") String text,
-//            @Param("categories") List<Long> categories,
-//            @Param("paid") Boolean paid,
-//            @Param("rangeStart") LocalDateTime rangeStart,
-//            @Param("rangeEnd") LocalDateTime rangeEnd,
-//            Boolean onlyAvailable,
-//            Pageable pageable);
 
     @Query("select e from Event e " +
             "JOIN FETCH e.initiator " +

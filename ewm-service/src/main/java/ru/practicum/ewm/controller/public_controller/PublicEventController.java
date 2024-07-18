@@ -12,6 +12,7 @@ import ru.practicum.ewm.service.EventService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,7 +32,8 @@ public class PublicEventController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<EventShortDto> getEventsWithParamsByUser(@RequestParam(required = false) String text,
+    public List<EventShortDto> getEventsWithParamsByUser(@Size(min = 1, max = 7000)
+                                                         @RequestParam(required = false) String text,
                                                          @RequestParam(required = false) List<Long> categories,
                                                          @RequestParam(required = false) Boolean paid,
                                                          @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

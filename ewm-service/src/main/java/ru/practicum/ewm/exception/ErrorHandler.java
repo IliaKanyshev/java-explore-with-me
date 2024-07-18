@@ -51,10 +51,10 @@ public class ErrorHandler {
         return new ApiError("BAD_REQUEST", "Missing Parameter.", e.getMessage(), LocalDateTime.now());
     }
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ApiError handleThrowableExceptions(final Exception e) {
-//        return new ApiError("INTERNAL_SERVER_ERROR", "Internal server error.", e.getMessage(),
-//                LocalDateTime.now());
-//    }
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleThrowableExceptions(final Exception e) {
+        return new ApiError("INTERNAL_SERVER_ERROR", "Internal server error.", e.getMessage(),
+                LocalDateTime.now());
+    }
 }

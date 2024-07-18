@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.ewm.dao.UserRepo;
 import ru.practicum.ewm.dto.user.UserDto;
-import ru.practicum.ewm.exception.DataConflictException;
 import ru.practicum.ewm.mapper.UserMapper;
 import ru.practicum.ewm.service.UserService;
 
@@ -22,11 +21,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto saveUser(UserDto userDto) {
-        if (userRepo.existsByName(userDto.getName())) {
-            log.info("User name {} already in use.", userDto.getName());
-            throw new DataConflictException(String.format("User name %s already in use.",
-                    userDto.getName()));
-        }
         log.info("User with name {} was created.", userDto.getName());
         return mapper.toUserDto(userRepo.save(mapper.toUser(userDto)));
     }

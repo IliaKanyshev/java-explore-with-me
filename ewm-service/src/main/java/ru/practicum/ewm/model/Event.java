@@ -44,7 +44,7 @@ public class Event {
     private LocalDateTime createdOn;
     private LocalDateTime publishedOn;
     @Transient
-    private long views;
+    private Long views;
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "compilations_events",

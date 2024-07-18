@@ -30,10 +30,8 @@ import ru.practicum.ewm.util.enums.StateAction;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,12 +94,23 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventByUserId(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         findUser(userId);
         Event event = findEvent(eventId);
-        if (event.getState().equals(EventState.PUBLISHED)) {
-            throw new DataConflictException("Event already published.");
+
+        if (!(event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED))) {
+            throw new DataConflictException("Only pending or cancelled events can be modified.");
         }
-        if (updateEventUserRequest == null) {
-            return mapper.toEventFullDto(event);
+        if (updateEventUserRequest.getStateAction() != null) {
+            event.setState(updateEventUserRequest.getStateAction()
+                    .equals(StateAction.SEND_TO_REVIEW) ? EventState.PENDING : EventState.CANCELED);
         }
+
+        if (updateEventUserRequest.getEventDate() != null) {
+            LocalDateTime eventDateTime = updateEventUserRequest.getEventDate();
+            if (eventDateTime.isBefore(LocalDateTime.now().plusHours(2))) {
+                throw new ValidationException("Start date should be at least 2 hours ahead of current time.");
+            }
+            event.setEventDate(eventDateTime);
+        }
+
         if (updateEventUserRequest.getAnnotation() != null) {
             event.setAnnotation(updateEventUserRequest.getAnnotation());
         }
@@ -113,13 +122,7 @@ public class EventServiceImpl implements EventService {
         if (updateEventUserRequest.getDescription() != null) {
             event.setDescription(updateEventUserRequest.getDescription());
         }
-        if (updateEventUserRequest.getEventDate() != null) {
-            LocalDateTime eventDateTime = updateEventUserRequest.getEventDate();
-            if (eventDateTime.isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new ValidationException("Start date should be at least 2 hours ahead of current time.");
-            }
-            event.setEventDate(eventDateTime);
-        }
+
         if (updateEventUserRequest.getLocation() != null) {
             event.setLocation(locationMapper.toLocation(updateEventUserRequest.getLocation()));
         }
@@ -135,10 +138,7 @@ public class EventServiceImpl implements EventService {
         if (updateEventUserRequest.getTitle() != null) {
             event.setTitle(updateEventUserRequest.getTitle());
         }
-        if (updateEventUserRequest.getStateAction() != null) {
-            event.setState(updateEventUserRequest.getStateAction()
-                    .equals(StateAction.SEND_TO_REVIEW) ? EventState.PENDING : EventState.CANCELED);
-        }
+
         log.info("Event with id {} updated by user with id {}", eventId, userId);
         return mapper.toEventFullDto(eventRepo.save(event));
     }
@@ -146,6 +146,39 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEvent) {
         Event event = findEvent(eventId);
+
+        if (updateEvent.getEventDate() != null) {
+            LocalDateTime date = updateEvent.getEventDate();
+            if (date.isBefore(LocalDateTime.now().plusHours(1))) {
+                throw new ValidationException("Start date of the event should be at least 1 hour ahead of current time.");
+            }
+            event.setEventDate(date);
+        }
+
+        if (updateEvent.getStateAction() != null) {
+            switch (updateEvent.getStateAction()) {
+
+                case PUBLISH_EVENT:
+                    if (!event.getState().equals(EventState.PENDING)) {
+                        throw new DataConflictException("Event state should be PENDING.");
+                    }
+                    event.setState(EventState.PUBLISHED);
+                    event.setPublishedOn(LocalDateTime.now());
+                    break;
+                case CANCEL_REVIEW:
+                    event.setState(EventState.CANCELED);
+                    break;
+                case REJECT_EVENT:
+                    if (event.getState().equals(EventState.PUBLISHED)) {
+                        throw new DataConflictException("Event already published.");
+                    }
+                    event.setState(EventState.CANCELED);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown event status action.");
+            }
+        }
+
         if (updateEvent.getAnnotation() != null) {
             if (updateEvent.getAnnotation().length() < 20 || updateEvent.getAnnotation().length() > 2000) {
                 throw new ValidationException("Annotation length violation. Must be from 20 to 2000.");
@@ -163,13 +196,7 @@ public class EventServiceImpl implements EventService {
             }
             event.setDescription(updateEvent.getDescription());
         }
-        if (updateEvent.getEventDate() != null) {
-            LocalDateTime date = updateEvent.getEventDate();
-            if (date.isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new ValidationException("Start date of the event should be at least 1 hour ahead of current time.");
-            }
-            event.setEventDate(date);
-        }
+
         if (updateEvent.getLocation() != null) {
             Location location = locationMapper.toLocation(updateEvent.getLocation());
             event.setLocation(locationRepo.save(location));
@@ -183,29 +210,7 @@ public class EventServiceImpl implements EventService {
         if (updateEvent.getRequestModeration() != null) {
             event.setRequestModeration(updateEvent.getRequestModeration());
         }
-        if (updateEvent.getStateAction() != null) {
-            switch (updateEvent.getStateAction()) {
-                case SEND_TO_REVIEW:
-                    event.setState(EventState.PENDING);
-                    break;
-                case PUBLISH_EVENT:
-                    if (!event.getState().equals(EventState.PENDING)) {
-                        throw new DataConflictException("Event state should be PENDING.");
-                    }
-                    event.setState(EventState.PUBLISHED);
-                    event.setPublishedOn(LocalDateTime.now());
-                    break;
-                case CANCEL_REVIEW:
-                    event.setState(EventState.CANCELED);
-                    break;
-                case REJECT_EVENT:
-                    if (event.getState().equals(EventState.PUBLISHED)) {
-                        throw new DataConflictException("Event already published.");
-                    }
-                    event.setState(EventState.CANCELED);
-                    break;
-            }
-        }
+
         if (updateEvent.getTitle() != null) {
             if (updateEvent.getTitle().length() < 3 || updateEvent.getTitle().length() > 120) {
                 throw new ValidationException("Title length violation. Must be from 3 to 120.");
@@ -229,7 +234,6 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("The start of the event cannot be after the end of the event");
         }
         List<Event> events = eventRepo.findEventsWithParams(users, states, categories, rangeStart, rangeEnd, page);
-        events.forEach(this::setViews);
         return mapper.toEventFullDtoList(events);
     }
 
@@ -248,15 +252,28 @@ public class EventServiceImpl implements EventService {
         PageRequest pageRequest = PageRequest.of(from / size, size);
         List<Event> events = eventRepo.findEventsWithParamsByUser(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, pageRequest);
 
-//        sendInfo(uri, ip);
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+
+        String start = rangeStart != null ? rangeStart.format(dateFormatter) : "2000-01-01 00:00:00";
+        String end = rangeEnd != null ? rangeEnd.format(dateFormatter) : LocalDateTime.now().format(dateFormatter);
+
+        List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
+
         for (Event event : events) {
-//            event.setViews(getViewsEventById(event.getId()));
+            String uri = "/events/" + event.getId();
+            long views = stats.stream()
+                    .filter(stat -> stat.getUri().equals(uri))
+                    .map(ViewStatsDto::getHits)
+                    .findFirst()
+                    .orElse(0L);
+            event.setViews(views);
             eventRepo.save(event);
         }
 
         return mapper.toEventShortDtoList(events);
     }
-
 
     @Override
     public EventFullDto getEvent(Long eventId, HttpServletRequest request) {
@@ -264,63 +281,23 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(EventState.PUBLISHED)) {
             throw new DataNotFoundException(String.format("Event with id %d not published.", eventId));
         }
-        createHit(request.getRequestURI(), request.getRemoteAddr());
-        setViews(event);
-        log.info("Get event with id {}", eventId);
-        return mapper.toEventFullDto(event);
-    }
 
-    private void createHit(String uri, String ip) {
-        EndpointHitDto hit = new EndpointHitDto();
-        hit.setApp("ewm-main-service");
-        hit.setIp(ip);
-        hit.setUri(uri);
-        hit.setTimestamp(LocalDateTime.now());
-        statClient.addStats(hit);
-    }
+        EndpointHitDto endpointHitDto = createEndpointHitDto(eventId, request);
+        statClient.addStats(endpointHitDto);
 
-    private void setViews(Event event) {
         String start = event.getCreatedOn().format(dateFormatter);
         String end = LocalDateTime.now().format(dateFormatter);
         List<ViewStatsDto> stats = statClient.getStats(start, end, List.of("/events/" + event.getId()), true);
+
         if (stats.isEmpty()) {
-            event.setViews(0);
+            event.setViews(0L);
         } else {
             event.setViews(stats.get(0).getHits());
         }
+
+        log.info("Get event with id {}", eventId);
+        return mapper.toEventFullDto(event);
     }
-
-    public void saveStat(Event event, HttpServletRequest request) {
-        String address = request.getRemoteAddr();
-        String name = "main-service";
-        EndpointHitDto requestDto = createEndpointHitDto(LocalDateTime.now(), "/events", name, address);
-        statClient.addStats(requestDto);
-//        saveStatForEvent(event.getId(), address, LocalDateTime.now(), name);
-
-    }
-
-    public void saveStat(List<Event> events, HttpServletRequest request) {
-        String address = request.getRemoteAddr();
-        String name = "main-service";
-        EndpointHitDto requestDto = createEndpointHitDto(LocalDateTime.now(), "/events", name, address);
-        statClient.addStats(requestDto);
-        events.forEach(event -> saveStatForEvent(event.getId(), address, LocalDateTime.now(), name));
-    }
-
-    private void saveStatForEvent(Long eventId, String address, LocalDateTime now, String name) {
-        EndpointHitDto requestDto = createEndpointHitDto(now, "/events/" + eventId, name, address);
-        statClient.addStats(requestDto);
-    }
-
-    private EndpointHitDto createEndpointHitDto(LocalDateTime timestamp, String uri, String app, String ip) {
-        EndpointHitDto dto = new EndpointHitDto();
-        dto.setTimestamp(timestamp);
-        dto.setUri(uri);
-        dto.setApp(app);
-        dto.setIp(ip);
-        return dto;
-    }
-
 
     private User findUser(Long userId) {
         return userRepo.findById(userId)
@@ -332,170 +309,14 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new DataNotFoundException(String.format("Event with id %d not found.", eventId)));
     }
 
-    private void validateTime(Event event) {
-        if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new DataConflictException("Event date should be 2 hours ahead creation date.");
-        }
+    private EndpointHitDto createEndpointHitDto(Long eventId, HttpServletRequest request) {
+        return EndpointHitDto.builder()
+                .app("ewm-service") // Имя вашего приложения
+                .uri(eventId != null ? "/events/" + eventId : "/events") // URI с eventId если доступен
+                .ip(request.getRemoteAddr()) // IP-адрес пользователя
+                .timestamp(LocalDateTime.now()) // Временная метка запроса
+                .build();
     }
-
-
-//        public void sendStat(Event event, HttpServletRequest request) {
-//            String remoteAddr = request.getRemoteAddr();
-//            String nameService = "main-service";
-//            LocalDateTime now = LocalDateTime.now();
-//
-//            sendStat("/events", remoteAddr, nameService, now);
-//            sendStat("/events/" + event.getId(), remoteAddr, nameService, now);
-//        }
-//
-//        public void sendStat(List<Event> events, HttpServletRequest request) {
-//            String remoteAddr = request.getRemoteAddr();
-//            String nameService = "main-service";
-//            LocalDateTime now = LocalDateTime.now();
-//
-//            sendStat("/events", remoteAddr, nameService, now);
-//            events.forEach(event -> sendStat("/events/" + event.getId(), remoteAddr, nameService, now));
-//        }
-//
-//        private void sendStat(String uri, String remoteAddr, String nameService, LocalDateTime now) {
-//            EndpointHitDto requestDto = new EndpointHitDto();
-//            requestDto.setTimestamp(LocalDateTime.parse(now.format(dateFormatter)));
-//            requestDto.setUri(uri);
-//            requestDto.setApp(nameService);
-//            requestDto.setIp(remoteAddr);
-//            statClient.addStats(requestDto);
-//        }
-//
-//        public void setView(List<Event> events) {
-//            if (events.isEmpty()) {
-//                return;
-//            }
-//
-//            LocalDateTime start = events.stream()
-//                    .map(Event::getCreatedOn)
-//                    .min(LocalDateTime::compareTo)
-//                    .orElse(LocalDateTime.now());
-//
-//            List<String> uris = new ArrayList<>();
-//            Map<String, Event> eventsUri = new HashMap<>();
-//            events.forEach(event -> {
-//                String uri = "/events/" + event.getId();
-//                uris.add(uri);
-//                eventsUri.put(uri, event);
-//                event.setViews(0L);
-//            });
-//
-//            String startTime = start.format(dateFormatter);
-//            String endTime = LocalDateTime.now().format(dateFormatter);
-//
-//            List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-//            stats.forEach(stat -> eventsUri.get(stat.getUri()).setViews(stat.getHits()));
-//        }
-//
-//        public void setView(Event event) {
-//            String startTime = event.getCreatedOn().format(dateFormatter);
-//            String endTime = LocalDateTime.now().format(dateFormatter);
-//            List<String> uris = List.of("/events/" + event.getId());
-//
-//            List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-//            event.setViews(stats.stream().findFirst().map(ViewStatsDto::getHits).orElse(0L));
-//        }
-//
-//        private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
-//            return statClient.getStats(startTime, endTime, uris, false);
-//        }
-
-    public void sendStat(List<Event> events, HttpServletRequest request) {
-        LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
-        String nameService = "main-service";
-
-        EndpointHitDto requestDto = new EndpointHitDto();
-        requestDto.setTimestamp(LocalDateTime.parse(now.format(dateFormatter)));
-        requestDto.setUri("/events");
-        requestDto.setApp(nameService);
-        requestDto.setIp(request.getRemoteAddr());
-        statClient.addStats(requestDto);
-        sendStatForEveryEvent(events, remoteAddr, LocalDateTime.now(), nameService);
-    }
-
-    public void sendStat(Event event, HttpServletRequest request) {
-        LocalDateTime now = LocalDateTime.now();
-        String remoteAddr = request.getRemoteAddr();
-        String nameService = "main-service";
-
-        EndpointHitDto requestDto = new EndpointHitDto();
-        requestDto.setTimestamp(now);
-        requestDto.setUri("/events");
-        requestDto.setApp(nameService);
-        requestDto.setIp(remoteAddr);
-        statClient.addStats(requestDto);
-        sendStatForTheEvent(event.getId(), remoteAddr, now, nameService);
-    }
-
-    private void sendStatForTheEvent(Long eventId, String remoteAddr, LocalDateTime now,
-                                     String nameService) {
-        EndpointHitDto requestDto = new EndpointHitDto();
-        requestDto.setTimestamp(now);
-        requestDto.setUri("/events/" + eventId);
-        requestDto.setApp(nameService);
-        requestDto.setIp(remoteAddr);
-        statClient.addStats(requestDto);
-    }
-
-    private void sendStatForEveryEvent(List<Event> events, String remoteAddr, LocalDateTime now,
-                                       String nameService) {
-        for (Event event : events) {
-            EndpointHitDto requestDto = new EndpointHitDto();
-            requestDto.setTimestamp(now);
-            requestDto.setUri("/events/" + event.getId());
-            requestDto.setApp(nameService);
-            requestDto.setIp(remoteAddr);
-            statClient.addStats(requestDto);
-        }
-    }
-
-    public void setView(List<Event> events) {
-        LocalDateTime start = events.get(0).getCreatedOn();
-        List<String> uris = new ArrayList<>();
-        Map<String, Event> eventsUri = new HashMap<>();
-        String uri = "";
-        for (Event event : events) {
-            if (start.isBefore(event.getCreatedOn())) {
-                start = event.getCreatedOn();
-            }
-            uri = "/events/" + event.getId();
-            uris.add(uri);
-            eventsUri.put(uri, event);
-            event.setViews(0L);
-        }
-
-        String startTime = start.format(DateTimeFormatter.ofPattern(DateTimePattern.PATTERN));
-        String endTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DateTimePattern.PATTERN));
-
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        stats.forEach((stat) ->
-                eventsUri.get(stat.getUri()).setViews(stat.getHits()));
-    }
-
-    public void setView(Event event) {
-        String startTime = event.getCreatedOn().format(dateFormatter);
-        String endTime = LocalDateTime.now().format(dateFormatter);
-        List<String> uris = List.of("/events/" + event.getId());
-
-        List<ViewStatsDto> stats = getStats(startTime, endTime, uris);
-        if (stats.size() == 1) {
-            event.setViews(stats.get(0).getHits());
-        } else {
-            event.setViews(0L);
-        }
-    }
-
-    private List<ViewStatsDto> getStats(String startTime, String endTime, List<String> uris) {
-        return statClient.getStats(startTime, endTime, uris, false);
-    }
-
-
 }
 
 

@@ -42,13 +42,12 @@ public class RequestServiceImpl implements RequestService {
         Event event = eventRepo.findByIdWithAllParams(eventId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Event with id %d not found.", eventId)));
 
-        if (!event.getState().equals(EventState.PUBLISHED)) {
-            throw new DataConflictException("Event is not published.");
+        if (event.getParticipantLimit() != 0 && event.getParticipantLimit() <= event.getConfirmedRequests()) {
+            throw new DataConflictException("Participants limit reached.");
         }
 
-        long requestCount = requestRepo.countByEventId(eventId);
-        if (event.getParticipantLimit() != 0 && requestCount >= event.getParticipantLimit()) {
-            throw new DataConflictException("Participant limit reached.");
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            throw new DataConflictException("Event is not published.");
         }
 
         if (event.getInitiator().getId().equals(userId)) {
@@ -65,8 +64,8 @@ public class RequestServiceImpl implements RequestService {
         request.setRequester(user);
         request.setStatus(event.getRequestModeration() && event.getParticipantLimit() != 0 ? RequestStatus.PENDING : RequestStatus.CONFIRMED);
         final Request savedRequest = requestRepo.save(request);
-        if (request.getStatus().equals(RequestStatus.CONFIRMED)) {
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+        if (savedRequest.getStatus().equals(RequestStatus.CONFIRMED)) {
+            event.setConfirmedRequests(requestRepo.countAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED));
             eventRepo.save(event);
         }
         log.info("Request from user with id {} for event with id {} saved.", userId, eventId);
@@ -97,56 +96,44 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     @Override
     public EventRequestStatusUpdateResult updateRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest request) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new DataNotFoundException("User not found."));
         Event event = eventRepo.findByIdWithAllParams(eventId)
                 .orElseThrow(() -> new DataNotFoundException(String.format("Event with id %d not found.", eventId)));
 
-        if (!user.getId().equals(event.getInitiator().getId())) {
+        if (!event.getInitiator().getId().equals(userId)) {
             throw new DataConflictException(String.format("User %d is not the initiator of the event %d.", userId, eventId));
         }
 
-        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
-            return EventRequestStatusUpdateResult.builder()
-                    .confirmedRequests(Collections.emptyList())
-                    .rejectedRequests(Collections.emptyList())
-                    .build();
-        }
-
-        long availableSpaces = event.getParticipantLimit() - event.getConfirmedRequests();
-        if (availableSpaces <= 0) {
-            throw new DataConflictException("Participant limit has been violated.");
-        }
-
         List<Request> requestsList = requestRepo.findAllByIdIn(request.getRequestIds());
-
         List<Request> confirmedRequests = new ArrayList<>();
         List<Request> rejectedRequests = new ArrayList<>();
 
-        for (Request r : requestsList) {
-            if (!r.getStatus().equals(RequestStatus.PENDING)) {
-                throw new DataConflictException("Request status must be PENDING.");
-            }
+        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(Collections.emptyList())
+                .rejectedRequests(Collections.emptyList())
+                .build();
 
-            if (request.getStatus().equals(RequestStatus.CONFIRMED) && availableSpaces > 0) {
-                r.setStatus(RequestStatus.CONFIRMED);
-                confirmedRequests.add(r);
-                availableSpaces--;
-            } else {
-                r.setStatus(RequestStatus.REJECTED);
-                rejectedRequests.add(r);
+        for (Request req : requestsList) {
+            if (req.getStatus().equals(RequestStatus.CONFIRMED)) {
+                throw new DataConflictException("Request already confirmed.");
+            }
+            if (request.getStatus().equals(RequestStatus.REJECTED)) {
+                req.setStatus(RequestStatus.REJECTED);
+                rejectedRequests.add(req);
+            } else if (request.getStatus().equals(RequestStatus.CONFIRMED) && req.getStatus().equals(RequestStatus.PENDING)) {
+                if (event.getConfirmedRequests() >= event.getParticipantLimit()) {
+                    throw new DataConflictException("Participant limit has been violated.");
+                }
+                req.setStatus(RequestStatus.CONFIRMED);
+                confirmedRequests.add(req);
+                event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             }
         }
 
-        event.setConfirmedRequests(requestRepo.countAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED));
-
-        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
-                .confirmedRequests(mapper.toRequestDtoList(confirmedRequests))
-                .rejectedRequests(mapper.toRequestDtoList(rejectedRequests))
-                .build();
-
         eventRepo.save(event);
         requestRepo.saveAll(requestsList);
+
+        result.setConfirmedRequests(mapper.toRequestDtoList(confirmedRequests));
+        result.setRejectedRequests(mapper.toRequestDtoList(rejectedRequests));
 
         return result;
     }
