@@ -25,7 +25,6 @@ import ru.practicum.ewm.model.User;
 import ru.practicum.ewm.service.EventService;
 import ru.practicum.ewm.util.DateTimePattern;
 import ru.practicum.ewm.util.enums.EventState;
-import ru.practicum.ewm.util.enums.RequestStatus;
 import ru.practicum.ewm.util.enums.StateAction;
 
 import javax.servlet.http.HttpServletRequest;
