@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -252,25 +251,9 @@ public class EventServiceImpl implements EventService {
         PageRequest pageRequest = PageRequest.of(from / size, size);
         List<Event> events = eventRepo.findEventsWithParamsByUser(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, pageRequest);
 
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
+        createEndpointHitDto(request.getRequestURI(), request.getRemoteAddr());
 
-        String start = rangeStart != null ? rangeStart.format(dateFormatter) : "2000-01-01 00:00:00";
-        String end = rangeEnd != null ? rangeEnd.format(dateFormatter) : LocalDateTime.now().format(dateFormatter);
-
-        List<ViewStatsDto> stats = statClient.getStats(start, end, uris, false);
-
-        for (Event event : events) {
-            String uri = "/events/" + event.getId();
-            long views = stats.stream()
-                    .filter(stat -> stat.getUri().equals(uri))
-                    .map(ViewStatsDto::getHits)
-                    .findFirst()
-                    .orElse(0L);
-            event.setViews(views);
-            eventRepo.save(event);
-        }
+        events.forEach(this::setViews);
 
         return mapper.toEventShortDtoList(events);
     }
@@ -282,19 +265,9 @@ public class EventServiceImpl implements EventService {
             throw new DataNotFoundException(String.format("Event with id %d not published.", eventId));
         }
 
-        EndpointHitDto endpointHitDto = createEndpointHitDto(eventId, request);
-        statClient.addStats(endpointHitDto);
+        createEndpointHitDto(request.getRequestURI(), request.getRemoteAddr());
 
-        String start = event.getCreatedOn().format(dateFormatter);
-        String end = LocalDateTime.now().format(dateFormatter);
-        List<ViewStatsDto> stats = statClient.getStats(start, end, List.of("/events/" + event.getId()), true);
-
-        if (stats.isEmpty()) {
-            event.setViews(0L);
-        } else {
-            event.setViews(stats.get(0).getHits());
-        }
-        eventRepo.save(event);
+        setViews(event);
         log.info("Get event with id {}", eventId);
         return mapper.toEventFullDto(event);
     }
@@ -309,13 +282,24 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new DataNotFoundException(String.format("Event with id %d not found.", eventId)));
     }
 
-    private EndpointHitDto createEndpointHitDto(Long eventId, HttpServletRequest request) {
-        return EndpointHitDto.builder()
-                .app("ewm-service")
-                .uri(eventId != null ? "/events/" + eventId : "/events")
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
+    private void createEndpointHitDto(String uri, String ip) {
+        EndpointHitDto hit = new EndpointHitDto();
+        hit.setApp("ewm-main-service");
+        hit.setIp(ip);
+        hit.setUri(uri);
+        hit.setTimestamp(LocalDateTime.now());
+        statClient.createEndpointHit(hit);
+    }
+
+    private void setViews(Event event) {
+        String start = event.getCreatedOn().format(dateFormatter);
+        String end = LocalDateTime.now().format(dateFormatter);
+        List<ViewStatsDto> stats = statClient.getStats(start, end, true, List.of("/events/" + event.getId()));
+        if (stats.isEmpty()) {
+            event.setViews(0L);
+        } else {
+            event.setViews(stats.get(0).getHits());
+        }
     }
 }
 
