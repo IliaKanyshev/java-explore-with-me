@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.server.exception.StartAfterEndException;
 import ru.practicum.server.service.StatService;
 import ru.practicum.server.util.DateTimePattern;
 
@@ -35,9 +36,13 @@ public class StatController {
                                        @RequestParam(name = "end") @DateTimeFormat(pattern = DateTimePattern.PATTERN)
                                        LocalDateTime end,
                                        @RequestParam(required = false) List<String> uris) {
+        if (start.isAfter(end)) {
+            throw new StartAfterEndException("Start time can't be after end time");
+        }
+        List<String> urisList = uris != null ? uris : new ArrayList<>();
         log.info("GET request to find stats with unique={}, start={}, end={}, uris={}", unique,
                 start.toString(), end.toString(), uris);
-        List<String> urisList = uris != null ? uris : new ArrayList<>();
+
         return service.getStats(unique, start, end, urisList);
     }
 }

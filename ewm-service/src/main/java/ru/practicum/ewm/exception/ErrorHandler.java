@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 
 @RestControllerAdvice
 public class ErrorHandler {
-//    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(DateTimePattern.PATTERN);
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
