@@ -294,7 +294,7 @@ public class EventServiceImpl implements EventService {
         } else {
             event.setViews(stats.get(0).getHits());
         }
-
+        eventRepo.save(event);
         log.info("Get event with id {}", eventId);
         return mapper.toEventFullDto(event);
     }
@@ -311,10 +311,10 @@ public class EventServiceImpl implements EventService {
 
     private EndpointHitDto createEndpointHitDto(Long eventId, HttpServletRequest request) {
         return EndpointHitDto.builder()
-                .app("ewm-service") // Имя вашего приложения
-                .uri(eventId != null ? "/events/" + eventId : "/events") // URI с eventId если доступен
-                .ip(request.getRemoteAddr()) // IP-адрес пользователя
-                .timestamp(LocalDateTime.now()) // Временная метка запроса
+                .app("ewm-service")
+                .uri(eventId != null ? "/events/" + eventId : "/events")
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 }
