@@ -1,6 +1,9 @@
 package ru.practicum.ewm.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.Formula;
 import ru.practicum.ewm.util.enums.EventState;
 
@@ -21,11 +24,9 @@ public class Event {
     private String annotation;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "initiator_id", nullable = false)
-    @ToString.Exclude
     private User initiator;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    @ToString.Exclude
     private Category category;
     @Formula(value = "(select count(r.id) from requests as r where r.event_id = id and r.status like 'CONFIRMED')")
     private int confirmedRequests;
@@ -33,7 +34,6 @@ public class Event {
     private LocalDateTime eventDate;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id", nullable = false)
-    @ToString.Exclude
     private Location location;
     private Boolean paid;
     private int participantLimit;
@@ -51,6 +51,5 @@ public class Event {
             joinColumns = {@JoinColumn(name = "event_id", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "compilation_id", referencedColumnName = "id")}
     )
-    @ToString.Exclude
     private List<Compilation> compilations;
 }

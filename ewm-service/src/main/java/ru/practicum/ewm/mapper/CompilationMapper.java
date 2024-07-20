@@ -6,7 +6,6 @@ import ru.practicum.ewm.model.Compilation;
 
 import java.util.List;
 
-//@Component
 @Mapper(componentModel = "spring")
 public interface CompilationMapper {
     CompilationDto toCompilationDto(Compilation compilation);

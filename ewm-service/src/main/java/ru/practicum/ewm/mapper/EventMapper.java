@@ -9,7 +9,6 @@ import ru.practicum.ewm.model.Event;
 
 import java.util.List;
 
-//@Component
 @Mapper(componentModel = "spring")
 public interface EventMapper {
     @Mapping(source = "category", target = "category.id")

@@ -10,7 +10,10 @@ import ru.practicum.ewm.dto.user.UserShortDto;
 import ru.practicum.ewm.util.DateTimePattern;
 import ru.practicum.ewm.util.enums.EventState;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Data
@@ -18,8 +21,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class EventFullDto {
     private Long id;
-    @NotNull
-    @NotEmpty
     @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
@@ -27,8 +28,6 @@ public class EventFullDto {
     @NotNull
     private CategoryDto category;
     private Integer confirmedRequests;
-    @NotNull
-    @NotEmpty
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;

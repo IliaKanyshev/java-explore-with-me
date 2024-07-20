@@ -7,26 +7,22 @@ import lombok.NoArgsConstructor;
 import ru.practicum.ewm.dto.location.LocationDto;
 import ru.practicum.ewm.util.DateTimePattern;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PositiveOrZero;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewEventDto {
-    @NotNull
     @NotBlank
     @Size(min = 20, max = 2000)
     private String annotation;
     @NotNull
     private Long category;
-    @NotNull
     @NotBlank
     @Size(min = 20, max = 7000)
     private String description;
+    @Future
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimePattern.PATTERN)
     private LocalDateTime eventDate;

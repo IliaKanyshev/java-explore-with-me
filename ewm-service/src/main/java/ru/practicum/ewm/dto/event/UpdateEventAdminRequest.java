@@ -14,19 +14,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateEventAdminRequest {
-    //    @Size(min = 20, max = 2000)
     private String annotation;
     private Long category;
-    //    @Size(min = 20, max = 7000)
     private String description;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = DateTimePattern.PATTERN)
     private LocalDateTime eventDate;
     private LocationDto location;
     private Boolean paid;
-    //    @PositiveOrZero
     private Integer participantLimit;
     private Boolean requestModeration;
     private StateAction stateAction;
-    //    @Size(min = 3, max = 120)
     private String title;
 }
