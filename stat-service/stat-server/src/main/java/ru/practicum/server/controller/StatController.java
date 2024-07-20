@@ -1,37 +1,48 @@
 package ru.practicum.server.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.server.exception.StartAfterEndException;
 import ru.practicum.server.service.StatService;
 import ru.practicum.server.util.DateTimePattern;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class StatController {
 
     private final StatService service;
 
     @PostMapping("/hit")
     @ResponseStatus(HttpStatus.CREATED)
-    public void saveHit(@Valid @RequestBody EndpointHitDto endpointHitDto) {
-        service.saveHit(endpointHitDto);
+    public EndpointHitDto saveHit(@RequestBody EndpointHitDto dto) {
+        log.info("POST request to create a hit of {}", dto.toString());
+        return service.createEndpointHitDto(dto);
     }
 
     @GetMapping("/stats")
-    public List<ViewStatsDto> getStats(@DateTimeFormat(pattern = DateTimePattern.PATTERN)
-                                       @RequestParam(value = "start") LocalDateTime start,
-                                       @DateTimeFormat(pattern = DateTimePattern.PATTERN)
-                                       @RequestParam(value = "end") LocalDateTime end,
-                                       @RequestParam(required = false) List<String> uris,
-                                       @RequestParam(required = false, defaultValue = "false") Boolean unique) {
-        return service.getStats(start, end, uris, unique);
+    public List<ViewStatsDto> getStats(@RequestParam(defaultValue = "false") boolean unique,
+                                       @RequestParam(name = "start") @DateTimeFormat(pattern = DateTimePattern.PATTERN)
+                                       LocalDateTime start,
+                                       @RequestParam(name = "end") @DateTimeFormat(pattern = DateTimePattern.PATTERN)
+                                       LocalDateTime end,
+                                       @RequestParam(required = false) List<String> uris) {
+        if (start.isAfter(end)) {
+            throw new StartAfterEndException("Start time can't be after end time");
+        }
+        List<String> urisList = uris != null ? uris : new ArrayList<>();
+        log.info("GET request to find stats with unique={}, start={}, end={}, uris={}", unique,
+                start.toString(), end.toString(), uris);
+
+        return service.getStats(unique, start, end, urisList);
     }
 }

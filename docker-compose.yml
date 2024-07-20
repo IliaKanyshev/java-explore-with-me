@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 services:
   stats-server:
     build: ./stat-service/stat-server
@@ -23,6 +23,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
 
+
   ewm-service:
     build: ./ewm-service
     image:  ewm-main-service
@@ -43,6 +44,10 @@ services:
     ports:
     - "6542:5432"
     environment:
-      - POSTGRES_DB=ewn
+      - POSTGRES_DB=ewm
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
+
+
+
+
