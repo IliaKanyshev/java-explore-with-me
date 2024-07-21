@@ -36,7 +36,7 @@ wait_for()
             nc -z $WAITFORIT_HOST $WAITFORIT_PORT
             WAITFORIT_result=$?
         else
-#            (echo -n > /dev/tcp/$WAITFORIT_HOST/$WAITFORIT_PORT) >/dev/null 2>&1
+#            (echo -n > /feature/tcp/$WAITFORIT_HOST/$WAITFORIT_PORT) >/feature/null 2>&1
             (curl --fail --silent $WAITFORIT_HOST:$WAITFORIT_PORT/actuator/health | grep UP) >/dev/null 2>&1
             WAITFORIT_result=$?
         fi
